@@ -1,3 +1,12 @@
+resource "google_compute_instance_group" "docker-hosts" {
+  name        = "docker-host"
+  description = "Terraform docker-host group"
+
+  instances = [
+    "${google_compute_instance.docker-host.*.self_link}"
+  ]
+  zone = "${var.zone}"
+}
 resource "google_compute_instance" "docker-host" {
   count        = "${var.count}"
   zone         = "${var.zone}"
