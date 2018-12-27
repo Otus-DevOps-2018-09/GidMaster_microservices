@@ -37,3 +37,14 @@ resource "google_compute_firewall" "firewall-docker" {
   source_ranges = "${var.source_address}"
   target_tags = ["docker-host"]
 }
+resource "google_compute_firewall" "firewall-reddit" {
+  name = "reddit-app"
+  network = "default"
+
+  allow {
+    protocol = "tcp"
+    ports = ["9292"]
+  }
+  source_ranges = "${var.source_address}"
+  target_tags = ["docker-host"]
+}
