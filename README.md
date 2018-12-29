@@ -17,7 +17,7 @@
 2. Installed docker machine and created VM on GCP.
 3. Made my own image.
 4. Pushed it on DockerHub.
-#### Homework 3. Task with *.
+#### Homework 2. Task with *.
 1. Made Terraform instructions to create docker host. Number of docker hosts can be set in `variable.tf` file.
 2. Made ansible playbooks for docker installation and application deployment. Used ansible-galaxy role `nickjj.docker` for docker installation. Used dynamic inventory. Used ansible-vault to store sensetive data. 
 3. Made "`baked`" image with installed docker by packer.
