@@ -19,8 +19,15 @@
 4. Pushed it on DockerHub.
 #### Homework 2. Task with *.
 1. Made Terraform instructions to create docker host. Number of docker hosts can be set in `variable.tf` file.
-2. Made ansible playbooks for docker installation and application deployment. Used ansible-galaxy role `nickjj.docker` for docker installation. Used dynamic inventory. Used ansible-vault to store sensetive data. 
+2. Made ansible playbooks for docker installation and application deployment. Used ansible-galaxy role `nickjj.docker` for docker installation. Used dynamic inventory. Used ansible-vault to store sensetive data.
 3. Made "`baked`" image with installed docker by packer.
+### Homework 3. Docker.
+1. Studied about microservicers (a litle).
+2. Created docker netework, and network alias for microcesriveces.
+3. Updated and optimazed images.
+4. Created volume for DB, to save messages.
+#### Homework 4. Task with *
+1. Played a little with network alias.
 
 ## Remarks.
 1. Quite interesting command:
