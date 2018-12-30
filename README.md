@@ -5,6 +5,7 @@
 * [Task Description.](#task-description)
     * [Homework 1. Docker.](#homework-1-docker)
     * [Homework 2. Docker.](#homework-2-docker)
+    * [Homework 3. Docker.](#homework-3-docker)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
