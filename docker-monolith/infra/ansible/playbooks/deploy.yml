@@ -1,0 +1,6 @@
+---
+- name: "Run Docker monolith application"
+  hosts: "tag_docker_host"
+  roles:
+  - role: "app"
+
