@@ -5,3 +5,4 @@
 .terraform/
 docker-monolith/infra/ansible/roles/nickjj.docker
 .env
+gitlab-ci/infra/*
