@@ -8,6 +8,7 @@
     * [Homework 3. Docker.](#homework-3-docker)
     * [Homework 4. Docker.]($homework-4-docker)
     * [Homework 5. GitLab CI.]($homework-5-gitlab-ci)
+    * [Homework 6. GitLab CI.]($homework-6-gitlab-ci)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -50,7 +51,7 @@ It's quite tricky. According to conversation on Slack this deployment should use
 To remake application without rebuild container image we should use additional volumes in `docker-compose.override.yml` where we put updated source files. 
 
 In case of using docker-machine we should copy source files to remote machine. Copy the source files to docker-host machine by docker-machine scp -r . docker-host: In docker-host don't forget to copy src from /home/docker-user/ to your user home directory with project path, for example - /home/your_user/user_microservices/src.
-#### Homework 5. GitLab-CI.
+### Homework 5. GitLab-CI.
 1. Installer GitLab-CI on cloud macine.
 2. Installed runner.
 3. Run simple test for reddit application.
@@ -60,6 +61,10 @@ In case of using docker-machine we should copy source files to remote machine. C
     * Installed `gitlab-runner`.
     * Installed docker-machine and created local docker-machine with GCloud driver.
 2. Configured integration with Slack messager.
+### Homework 6. GitLab-CI.
+1. Studied about environments in GitLab-CI.
+2. Made `Development`, `Stage`, `Production` environments. Made different pipelines for different environments.
+3. Made instructions for dynamic enviroment creation. Tested.
 
 ## Remarks.
 1. Quite interesting command:
