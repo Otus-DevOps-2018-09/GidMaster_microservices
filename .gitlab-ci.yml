@@ -52,5 +52,7 @@ production:
   when: manual
   script:
     - echo 'Deploy'
-  url: https://example.com
+  environment:
+    name: production
+    url: https://example.com
 
