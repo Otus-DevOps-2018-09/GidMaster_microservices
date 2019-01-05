@@ -3,7 +3,7 @@ projects:
   - docker-226710
 filters:
 auth_kind: serviceaccount
-service_account_file: /home/dockerservice/.gce/docker-35df53817f8e.json
+service_account_file: /home/dockerservice/.gce/api.json
 keyed_groups:
   # Create groups from GCE tags
   - prefix: tag
