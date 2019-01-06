@@ -1,6 +1,6 @@
 ---
 - name: "Install Docker"
-  hosts: "tag_docker_host"
+  hosts: "{{ variable_host | default('tag_docker_host') }}"
   become: true
   vars_files:
     - "credentials.yml"

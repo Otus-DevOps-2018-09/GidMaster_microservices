@@ -14,8 +14,8 @@
   "provisioners": [
     {
     "type": "ansible",
-    "playbook_file": "../ansible/playbooks/packer_docker.yml",
-    "extra_arguments": ["--vault-password-file", "~/.ansible/vault.key"]
+    "playbook_file": "../ansible/playbooks/docker.yml",
+    "extra_arguments": ["--vault-password-file", "~/.ansible/vault.key", "--extra-vars", "variable_host=all"]
     }
   ]
 }
