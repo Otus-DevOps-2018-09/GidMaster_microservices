@@ -12,4 +12,3 @@ services:
   post:
    volumes:
      - ./post-py:/app
-
