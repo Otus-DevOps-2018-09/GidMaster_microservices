@@ -51,6 +51,7 @@ It's quite tricky. According to conversation on Slack this deployment should use
 To remake application without rebuild container image we should use additional volumes in `docker-compose.override.yml` where we put updated source files. 
 
 In case of using docker-machine we should copy source files to remote machine. Copy the source files to docker-host machine by docker-machine scp -r . docker-host: In docker-host don't forget to copy src from /home/docker-user/ to your user home directory with project path, for example - /home/your_user/user_microservices/src.
+
 ### Homework 5. GitLab-CI.
 1. Installer GitLab-CI on cloud macine.
 2. Installed runner.
