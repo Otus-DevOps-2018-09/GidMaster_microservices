@@ -9,6 +9,7 @@
     * [Homework 4. Docker.]($homework-4-docker)
     * [Homework 5. GitLab CI.]($homework-5-gitlab-ci)
     * [Homework 6. GitLab CI.]($homework-6-gitlab-ci)
+    * [Homework 7. Monitoring.]($homework-7-monitoring)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -65,6 +66,241 @@ In case of using docker-machine we should copy source files to remote machine. C
 1. Studied about environments in GitLab-CI.
 2. Made `Development`, `Stage`, `Production` environments. Made different pipelines for different environments.
 3. Made instructions for dynamic enviroment creation. Tested.
+### Homework 7. Monitoring.
+1. Prometheus. Run, configuration, Get started with Web UI
+    1. Created firewall rules for application and prometheus:
+    ```bash
+    gcloud compute firewall-rules create prometheus-default --allow tcp:9090
+    gcloud compute firewall-rules create puma-default --allow tcp:9292 
+    ```
+    2. Created and used docker-host:
+    ```bash
+    docker-machine create --driver google \
+    --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+    --google-project <Project-ID> \
+    --google-machine-type n1-standard-1 \
+    --google-zone europe-west1-b \
+    docker-host 
+
+    eval $(docker-machine env docker-host)
+    ```
+    3. Run prometheus with default settings:
+    ```bash
+     docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus:v2.1.0
+    ```
+    4. Looked on some metrics. Got information about metric format.
+
+    `prometheus_build_info{branch="HEAD",goversion="go1.9.1",instance="localhost:9090", job="prometheus", revision="3a7c51ab70fc7615cd318204d3aa7c078b7c5b20",version="1.8.1"}`
+
+    `prometheus_build_info` - metric's ID. There is ID of collected information
+
+    `branch=`  `job=` and any `<label>=` - Label. Label in this case provides extra information about collected metric.
+
+    `go1.9.1` ans any key value. This is metrics value.
+    
+    5. Studied some basic information about `Targets`.
+
+    Prometheus uses systems or processes as a tergets for monitoring.
+
+    6. Stoped prometheus container.
+    7. Re-organized folder structure. `docker-monolith` folder, `docker-compose` and `.env` (include example) files moved to `docker` folder. Created `monitoring` folder
+    8. Created `Dockerfile` in monitoring/prometheus:
+    ```dockerfile
+    FROM prom/prometheus:v2.1.0
+    ADD prometheus.yml /etc/prometheus/
+    ```
+    9. Created `prometheus.yml` in monitoring/prometheus:
+    ```yaml
+    ---
+    global:
+     scrape_interval: '5s'
+    scrape_configs:
+     - job_name: 'prometheus'
+     static_configs:
+     - targets:
+     - 'localhost:9090'
+     - job_name: 'ui'
+     static_configs:
+     - targets:
+     - 'ui:9292'
+     - job_name: 'comment'
+     static_configs:
+     - targets:
+     - 'comment:9292'
+
+    ```
+    10. Made docker image:
+    ```bash
+    export USER_NAME=username
+    docker build -t $USER_NAME/prometheus .
+    ```
+    11. Re-builded microservice images:
+    ```bash
+    for i in ui post-py comment; do cd src/$i; bash docker_build.sh; cd -; done
+    ```
+    12. Updated `docker/docker-compose.yml`. Added prometheus service:
+    ```yaml
+    services:
+    ...
+      prometheus:
+        image: ${USERNAME}/prometheus
+        ports:
+          - '9090:9090'
+        volumes:
+          - prometheus_data:/prometheus
+        command:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus'
+          - '--storage.tsdb.retention=1d'
+    volumes:
+      prometheus_data:
+    ```
+    13. Commented build command in other services.
+    14. Run `docker-compose up -d`
+2. Looked how works build-in healthchecks in services. Used browser <docker-host>:9090
+3. Collecting host metrics.
+    1. Studied about exporters.
+    2. Configured `node-exporter` in docker/docker-compose.yml:
+    ```yaml
+    services:
+    ...
+      node-exporter:
+        image: prom/node-exporter:v0.15.2
+        user: root
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    ```
+    3. Updated `prometheus.yml` in monitoring\prometheus for collecting data from node-exporter:
+    ```yaml
+    scrape_configs:
+    ...
+    - job_name: 'node'
+      static_configs:
+        - targets:
+          - 'node-exporter:9100'
+    ```
+    4. create new Docker image with prometheus in `monitoring/prometheus`:
+    ```bash
+    docker build -t $USER_NAME/prometheus .
+    ```
+    5. restart services with docker-compose:
+    ```bash
+    docker-compose down
+    docker-compose up -d 
+    ```
+    6. Saw some new metrics from node exporter. Web UI <docker-host>:9090
+#### Homework 7. 1st task with *.
+Added MongoDB monitoring. Used `percona/mongodb_exporter`.
+1. Make `/monitoring/mongodb_exporter` directory
+2. Creat Dockerfile:
+```Dockerfile
+FROM golang:1.9
+
+ENV APPPATH $GOPATH/src/github.com/percona/mongodb_exporter
+WORKDIR $APPPATH
+
+RUN git clone "https://github.com/percona/mongodb_exporter" "$APPPATH" \
+    && go get -d && go build -o /bin/mongodb_exporter \
+    && rm -rf "$GOPATH"
+
+EXPOSE 9216
+
+ENTRYPOINT [ "/bin/mongodb_exporter" ]
+```
+3. Create image:
+```bash
+docker build -t $USER_NAME/mongodb_exporter .
+```
+4. Modify `monitoring\prometheus\prometheus.yml`. Added mongodb_exporter 
+```yaml
+scrape_configs:
+...
+  - job_name: 'mongodb'
+    static_configs:
+      - targets:
+        - 'mongo-exporter:9216'
+```
+5. Re-create prometheus image:
+```bash
+docker build -t $USER_NAME/prometheus .
+``` 
+6. Modify docker\docker-compose.yml. Added new service mongodb_exporter
+```yaml
+services:
+...
+  mongo-exporter:
+     image: ${USERNAME}/mongo-exporter
+     ports:
+       - '9216:9216'
+     networks:
+       - backend
+     environment:
+       - MONGODB_URL=mongodb://post_db:27017
+
+```
+7. Re-run services:
+```bash
+docker-compose down
+docker-compose up -d 
+```
+8. Check new metrics via Web UI.
+####Homework 7. 2nd task with *.
+I've completed the task with two variants. Use cloudprober and blackbox-exporter. Im my opinion `cloudprober` easy to understand and configuration. All configurations presented as is in current sections. Usually we do the same steps that we did in previous task:
+1. Create Dockerfile.
+2. Create configuration file.
+3. Create image.
+4. Update `prometheus` image.
+5. Update `docker-compose` file.
+6. Restart service.
+####Homework 7. 3rd task with *.
+Made Makefile for make utility. Created two targets: build and push.
+```makefile
+build: comment post ui cloudprober prometheus blackbox-exporter
+push: push_comment push_post push_ui push_cloudprober push_blackbox-exporter
+
+comment:
+        cd src/comment && bash docker_build.sh
+
+post:
+        cd src/post-py && bash docker_build.sh
+
+ui:
+        cd src/ui && bash docker_build.sh
+
+cloudprober:
+        cd monitoring/cloudprober && docker build -t ${USER_NAME}/cloudprober .
+
+prometheus:
+        cd monitoring/prometheus && docker build -t ${USER_NAME}/prometheus .
+
+blackbox-exporter:
+        cd monitoring/prometheus && docker build -t ${USER_NAME}/blackbox-exporter .
+
+push_comment:
+        docker push ${USER_NAME}/comment
+
+push_post:
+        docker push ${USER_NAME}/post
+
+push_ui:
+        docker push ${USER_NAME}/ui
+
+push_cloudprober:
+        docker push ${USER_NAME}/cloudprober
+
+push_prometheus:
+        docker push ${USER_NAME}/prometheus
+
+push_blackbox-exporter:
+        docker push  ${USER_NAME}/blackbox-exporter
+
+```
 
 ## Remarks.
 1. Quite interesting command:
