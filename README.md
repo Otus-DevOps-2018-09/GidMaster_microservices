@@ -103,4 +103,3 @@ In case of using docker-machine we should copy source files to remote machine. C
       }
     ]
     ```
-
