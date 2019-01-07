@@ -339,4 +339,3 @@ push_blackbox-exporter:
       }
     ]
     ```
-
