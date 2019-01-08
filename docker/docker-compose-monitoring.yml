@@ -85,4 +85,11 @@ volumes:
 
 networks:
   backend:
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
   frontend:
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
+
