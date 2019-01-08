@@ -10,6 +10,7 @@
     * [Homework 5. GitLab CI.]($homework-5-gitlab-ci)
     * [Homework 6. GitLab CI.]($homework-6-gitlab-ci)
     * [Homework 7. Monitoring.]($homework-7-monitoring)
+    * [homework 8. Monitoring.]($homework-8-monitoring)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -52,7 +53,6 @@ It's quite tricky. According to conversation on Slack this deployment should use
 To remake application without rebuild container image we should use additional volumes in `docker-compose.override.yml` where we put updated source files. 
 
 In case of using docker-machine we should copy source files to remote machine. Copy the source files to docker-host machine by docker-machine scp -r . docker-host: In docker-host don't forget to copy src from /home/docker-user/ to your user home directory with project path, for example - /home/your_user/user_microservices/src.
-
 ### Homework 5. GitLab-CI.
 1. Installer GitLab-CI on cloud macine.
 2. Installed runner.
@@ -251,7 +251,7 @@ docker-compose down
 docker-compose up -d 
 ```
 8. Check new metrics via Web UI.
-####Homework 7. 2nd task with *.
+#### Homework 7. 2nd task with *.
 I've completed the task with two variants. Use cloudprober and blackbox-exporter. Im my opinion `cloudprober` easy to understand and configuration. All configurations presented as is in current sections. Usually we do the same steps that we did in previous task:
 1. Create Dockerfile.
 2. Create configuration file.
@@ -259,7 +259,7 @@ I've completed the task with two variants. Use cloudprober and blackbox-exporter
 4. Update `prometheus` image.
 5. Update `docker-compose` file.
 6. Restart service.
-####Homework 7. 3rd task with *.
+#### Homework 7. 3rd task with *.
 Made Makefile for make utility. Created two targets: build and push.
 ```makefile
 build: comment post ui cloudprober prometheus blackbox-exporter
@@ -302,6 +302,167 @@ push_blackbox-exporter:
         docker push  ${USER_NAME}/blackbox-exporter
 
 ```
+### Homework 8. Monitoring.
+1. Monitoring Docker containers.
+    1. Separate `docker-compose.yml` to `docker-compose.yml` and `docker-compose-monitoring.yml`
+    2. Configure cAdvisor service in `docker-compose-monitoring.yml`:
+    ```yaml
+    services:
+    ...
+      cadvisor:
+      image: google/cadvisor:v0.29.0
+      volumes:
+        - '/:/rootfs:ro'
+        - '/var/run:/var/run:rw'
+        - '/sys:/sys:ro'
+        - '/var/lib/docker/:/var/lib/docker:ro'
+      ports:
+        - '8080:8080'
+      networks:
+        - backend    
+    ```
+    3. Add `cadvisor` job into prometheus config:
+    ```yaml
+    scrape_configs:
+    ...
+      - job_name: 'cadvisor'
+      static_configs:
+      - targets:
+        - 'cadvisor:8080'     
+    ```
+    4. Rebuild prometheus image
+    ```bash
+    export USER_NAME=username
+    cd monitoring/prometheus
+    docker build -t $USER_NAME/prometheus .
+    ```
+    5. Run services:
+    ```bash
+    cd ../../docker
+    docker-compose up -d 
+    docker-compose -f docker-compose-monitoring.yml up -d
+    ```
+    6. Look cAdvisor metrics through WebUI.
+2. Metrics Vizualization.
+    1. Add Grafana service:
+    ```yaml
+    services:
+    ...
+      grafana:
+        image: grafana/grafana:5.0.0
+        volumes:
+          - grafana_data:/var/lib/grafana
+        environment:
+          - GF_SECURITY_ADMIN_USER=admin
+          - GF_SECURITY_ADMIN_PASSWORD=secret
+        depends_on:
+          - prometheus
+        ports:
+          - 3000:3000
+        networks:
+          - backend 
+    ```
+    2. Re-Run services:
+    ```bash
+    cd docker
+    docker-compose -f docker-compose-monitoring.yml up -d
+    ```
+    3. Look at grafana interface. Use admin/secret to login.
+    4. Configure our prometheus server as datasource:
+    ![datasorce pic from grafana](datasorce.png)
+    5. Import dashbord from grafana.com and saved JSON into `monitoring/grafana/dashboards`
+4. Collecting application&business metrics.
+    1. Add business and application metrics.
+    2. Studied about percentiles, histograms, rate function and quitiles.
+5. Alerting configuration.
+    1. Make a alertmanager image:
+    ```dockerfile
+    FROM prom/alertmanager:v0.14.0
+    ADD config.yml /etc/alertmanager/ 
+    ```
+    2. Add configuratinon for slack notificationis.
+    ```yaml
+    global:
+      slack_api_url:    'https://hooks.slack.com/services/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'
+
+    route:
+      receiver: 'slack-notifications'
+
+    receivers:
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#konstantin_syrovatsky'
+    - name: 'email-notifications'
+      email_configs:
+      - to: 'team-X+alerts@example.org'
+    ```
+    Also added mail notofications for task with *
+    3. Make image of alertmamager:
+    ```bash
+    docker build -t $USER_NAME/alertmanager .
+    ```
+    4. Add configuration to `docker-compose-monitoring.yml` file:
+    ```yaml
+    services:
+    ...
+      alertmanager:
+      image: ${USER_NAME}/alertmanager
+      command:
+        - '--config.file=/etc/alertmanager/config.yml'
+      ports:
+        - 9093:9093
+      networks:
+        - backend
+    ```
+    5. Configure alert rules in `monitoring/prometheus/alerts.yml`:
+    ```yaml
+    groups:
+      - name: alert.rules
+        rules:
+        - alert: InstanceDown
+          expr: up == 0
+          for: 1m
+          labels:
+            severity: page
+          annotations:
+            description: '{{ $labels.instance }} of job {{  $labels.job }} has been down for more than 1 minute'
+            summary: 'Instance {{ $labels.instance }} down'
+        - alert: 95PercentileResponse
+          expr: histogram_quantile(0.95, sum(rate   (ui_request_response_time_bucket{instance="ui:9292",}[5m])) by (le)) > 1
+          for: 1m
+          labels:
+            severity: page
+          annotations:
+            description: "Response is to long"
+            summary: "UI problems"
+    ```
+    Also added configuration for task with *.
+    6. Update prometheus `Dockerfile` (monitoring/prometheus/Dockerfile):
+    ```dockerfile
+    FROM prom/prometheus:v2.1.0
+    ADD prometheus.yml /etc/prometheus/
+    ADD alerts.yml /etc/prometheus/
+    ```
+    7. Add information about alerts into prometheus config and re-build prometius image:
+    ```yaml
+    global:
+      scrape_interval: '5s'
+    ...
+    rule_files:
+      - "alerts.yml"
+    alerting:
+      alertmanagers:
+        - scheme: http
+      static_configs:
+        - targets:
+          - "alertmanager:9093"     
+    ```
+    ```bash
+    docker build -t $USER_NAME/prometheus .
+    ```
+    8. Check alerting service work.
+6. Tasks with * 
+
 
 ## Remarks.
 1. Quite interesting command:
@@ -339,3 +500,4 @@ push_blackbox-exporter:
       }
     ]
     ```
+

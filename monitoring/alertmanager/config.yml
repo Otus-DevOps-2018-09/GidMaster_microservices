@@ -8,3 +8,6 @@ receivers:
 - name: 'slack-notifications'
   slack_configs:
   - channel: '#konstantin_syrovatsky'
+- name: 'email-notifications'
+  email_configs:
+  - to: 'team-X+alerts@example.org'
