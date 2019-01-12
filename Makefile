@@ -1,5 +1,5 @@
-build: comment post ui cloudprober prometheus blackbox-exporter
-push: push_comment push_post push_ui push_cloudprober push_blackbox-exporter
+build: comment post ui cloudprober prometheus blackbox-exporter alertmanager
+push: push_comment push_post push_ui push_cloudprober push_blackbox-exporter push_alertmanager
 
 comment:
 	cd src/comment && bash docker_build.sh
@@ -17,7 +17,10 @@ prometheus:
 	cd monitoring/prometheus && docker build -t ${USER_NAME}/prometheus .
 
 blackbox-exporter:
-	cd monitoring/prometheus && docker build -t ${USER_NAME}/blackbox-exporter .
+	cd monitoring/prometheus && docker build -t ${USER_NAME}/blackbox_exporter .
+
+alertmanager:
+	cd monitoring/alertmanager &&  docker build -t ${USER_NAME}/alertmanager .
 
 push_comment:
 	docker push ${USER_NAME}/comment
@@ -35,5 +38,7 @@ push_prometheus:
 	docker push ${USER_NAME}/prometheus
 
 push_blackbox-exporter:
-	docker push  ${USER_NAME}/blackbox-exporter
+	docker push  ${USER_NAME}/blackbox_exporter
 
+push_alertmanager:
+	docker push ${USER_NAME}/alertmanager
