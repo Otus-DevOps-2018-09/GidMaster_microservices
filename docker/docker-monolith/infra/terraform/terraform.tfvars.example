@@ -1,0 +1,6 @@
+project         = "docker-<id>"
+public_key_path = "~/.ssh/appuser.pub"
+disk_image      = "ubuntu-1604-lts"
+count           = 2
+zone            = "europe-west1-b"
+source_address  = ["0.0.0.0/0"] 

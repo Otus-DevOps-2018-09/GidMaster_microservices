@@ -1,0 +1,14 @@
+REPOSITORY                 TAG                 IMAGE ID            CREATED              SIZE
+yourname/ubuntu-tmp-file   latest              d66d6d90fe46        About a minute ago   116MB
+ubuntu                     16.04               a51debf7e1eb        5 weeks ago          116MB
+hello-world                latest              4ab4c602aa5e        3 months ago         1.84kB
+
+---
+MAIN DIFFERENCES BETWEEN CONTAINER AND IMAGE BASED ON "INSPECT" OUTPUT.
+
+1.	Container it’s instance of image. This is main difference.
+2.	Container has such characteristic as “State”. This characteristic shows that container can change its state as opposite to image. Image is immutable.
+3.	Image has “RootFS” characteristic. The characteristic describes layered structure of image, unlike container, which is looks like monolith.
+4.	Image also has another characteristic (Architecture, OS etc.) which describe how create container.
+5.	Container also has “NetworkSettings” characteristic. The characteristic shows that container depends on network environment, unlike image.
+

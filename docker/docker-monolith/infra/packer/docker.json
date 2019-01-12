@@ -1,0 +1,22 @@
+{
+  "builders": [
+    {
+    "type": "googlecompute",
+    "project_id": "docker-226710",
+    "image_name": "docker-base-{{timestamp}}",
+    "image_family": "docker-base",
+    "source_image_family": "ubuntu-1604-lts",
+    "zone": "europe-west1-d",
+    "ssh_username": "appuser",
+    "machine_type": "n1-standard-1"
+    }
+  ],
+  "provisioners": [
+    {
+    "type": "ansible",
+    "playbook_file": "../ansible/playbooks/docker.yml",
+    "extra_arguments": ["--vault-password-file", "~/.ansible/vault.key", "--extra-vars", "variable_host=all"]
+    }
+  ]
+}
+
