@@ -3,6 +3,6 @@
 *.tfstate.backup
 *.tfvars
 .terraform/
-docker-monolith/infra/ansible/roles/nickjj.docker
+docker/docker-monolith/infra/ansible/roles/nickjj.docker/*
 .env
 gitlab-ci/infra/*
