@@ -7,10 +7,11 @@
     * [Homework 2. Docker.](#homework-2-docker)
     * [Homework 3. Docker.](#homework-3-docker)
     * [Homework 4. Docker.]($homework-4-docker)
-    * [Homework 5. GitLab CI.]($homework-5-gitlab-ci)
-    * [Homework 6. GitLab CI.]($homework-6-gitlab-ci)
-    * [Homework 7. Monitoring.]($homework-7-monitoring)
-    * [homework 8. Monitoring.]($homework-8-monitoring)
+    * [Homework 5. GitLab CI.](#homework-5-gitlab-ci)
+    * [Homework 6. GitLab CI.](#homework-6-gitlab-ci)
+    * [Homework 7. Monitoring.](#homework-7-monitoring)
+    * [Homework 8. Monitoring.](#homework-8-monitoring)
+    * [Homework 9. Logging](#homework-9-logging)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -463,6 +464,194 @@ push_blackbox-exporter:
     8. Check alerting service work.
 6. Tasks with * 
 
+### Homework 9. Logging.
+#### Preparations.
+Prepeare new VM instance.
+```bash
+$ export GOOGLE_PROJECT=<Project-ID>
+$ docker-machine create --driver google \
+ --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts \
+ --google-machine-type n1-standard-1 \
+ --google-open-port 5601/tcp \
+ --google-open-port 9292/tcp \
+ --google-open-port 9411/tcp \
+ logging 
+```
+Connect to them and check IP
+```bash
+eval $(docker-machine env logging)
+docker-machine ip logging
+```
+Update application sources.
+```bash
+wget -O reddit-microservices https://github.com/express42/reddit/archive/microservices.zip
+mv src src-old
+unzip reddit-microservices && mv reddit-microservices src
+mv src-old/ui/Dockerfile src/ui/Dockerfile 
+mv src-old/comment/Dockerfile src/comment/Dockerfile 
+mv src-old/post-py/Dockerfile src/post-py/Dockerfile 
+```
+Build images from new sources:
+```bash
+for i in ui post-py comment; do cd src/$i; bash docker_build.sh; cd -; done
+```
+#### Logging Docker containers.
+Make a new `docker-compose` file in docker directory:
+```yaml
+version: '3'
+services:
+  fluentd:
+    image: ${USERNAME}/fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+
+  elasticsearch:
+    image: elasticsearch:6.4.0 #latest tag not supported
+    expose:
+      - 9200
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: kibana:6.4.0 #latest tag not supported
+    ports:
+      - "5601:5601"
+```
+Make a new directory `logging/fluentd`:
+```bash
+mkdir logging && touch logging/fluentd/Dockerfile
+```
+Dockerfile
+```dockerfile
+FROM fluent/fluentd:v0.12
+RUN gem install fluent-plugin-elasticsearch --no-rdoc --no-ri --version 1.9.5
+RUN gem install fluent-plugin-grok-parser --no-rdoc --no-ri --version 1.0.0
+ADD fluent.conf /fluentd/etc
+```
+Add `fluentd.conf` configuration file:
+```conf
+<source>
+ @type forward
+ port 24224
+ bind 0.0.0.0
+</source>
+<match *.**>
+ @type copy
+ <store>
+ @type elasticsearch
+ host elasticsearch
+ port 9200
+ logstash_format true
+ logstash_prefix fluentd
+ logstash_dateformat %Y%m%d
+ include_tag_key true
+ type_name access_log
+ tag_key @log_name
+ flush_interval 1s
+ </store>
+ <store>
+ @type stdout
+ </store>
+</match> 
+```
+Make Docker image for fluentd:
+```bash
+docker build -t $USER_NAME/fluentd .
+```
+Change into .env files images' tag to `logging`
+Run application:
+```bash
+cd docker
+docker-compose up -d
+```
+Look on docker logs (do command in `docker` folder):
+```bash
+docker-compose logs -f post 
+```
+it looks like when you make posts:
+```json
+post_1     | {"event": "post_create", "level": "info", "message": "Successfully created a new post", "params": {"link": "https://google.com", "title": "Google."}, "request_id": "26c8bd82-2fbb-44eb-b076-f81398ff42e0", "service": "post", "timestamp": "2019-01-13 07:39:59"}
+post_1     | {"addr": "192.168.10.2", "event": "request", "level": "info", "method": "POST", "path": "/add_post?", "request_id": "26c8bd82-2fbb-44eb-b076-f81398ff42e0", "response_status": 200, "service": "post", "timestamp": "2019-01-13 07:39:59"}
+post_1     | {"event": "find_all_posts", "level": "info", "message": "Successfully retrieved all posts from the database", "params": {}, "request_id": "4ad4a589-1c8d-424c-a3a3-2bcf0c9265f4", "service": "post", "timestamp": "2019-01-13 07:40:00"}
+post_1     | {"addr": "192.168.10.2", "event": "request", "level": "info", "method": "GET", "path": "/posts?", "request_id": "4ad4a589-1c8d-424c-a3a3-2bcf0c9265f4", "response_status": 200, "service": "post", "timestamp": "2019-01-13 07:40:00"}
+```
+Lets modify logging drivar for post service. Change it form JSOn to Fluentd
+```yaml
+…
+  post:
+…
+    logging:
+    driver: "fluentd"
+    options:
+      fluentd-address: localhost:24224
+      tag: service.post 
+```
+Run logging infrastructure:
+```bash
+docker-compose -f docker-compose-logging.yml up -d
+docker-compose down
+docker-compose up -d 
+```
+Wait a little. And look on KIBANA interface.
+#### Filtering in Fluentd.
+
+Used diffirent format of filtering:
+
+**JSON Filter**
+```
+<filter service.post>
+ @type parser
+ format json
+ key_name log
+</filter> 
+```
+**RegEx filter**
+```
+<filter service.ui>
+ @type parser
+ format /\[(?<time>[^\]]*)\] (?<level>\S+) (?<user>\S+)[\W]*service=(?<service>\S+)[\W]*event=(?<event>\S+)[\W]*(?:path=(?<path>\S+)[\W]*)?request_id=(?<request_id>\S+)[\W]*(?:remote_addr=(?<remote_addr>\S+)[\W]*)?(?:method= (?<method>\S+)[\W]*)?(?:response_status=(?<response_status>\S+)[\W]*)?(?:message='(?<message>[^\']*)[\W]*)?/
+ key_name log
+</filter> 
+```
+**grok filter templates**
+```
+<filter service.ui>
+ @type parser
+ format grok
+ grok_pattern %{RUBY_LOGGER}
+key_name log
+</filter> 
+```
+```
+<filter service.ui>
+ @type parser
+ format grok
+ grok_pattern service=%{WORD:service} \| event=%{WORD:event} \| request_id=%{GREEDYDATA:request_id} \| message='%{GREEDYDATA:message}'
+ key_name message
+ reserve_data true
+</filter> 
+```
+#### Tracing
+Add new zipkin service to logging and rerun docker-compose
+```yaml
+services:
+ zipkin:
+ image: openzipkin/zipkin
+ ports:
+ - "9411:9411"
+ networks:
+ - frontend
+ - backend
+networks:
+ backend:
+ frontend:
+```
+```bash
+docker-compose -f docker-compose-logging.yml -f docker-compose.yml down
+docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d
+```
+look closer to zipkin WEB UI.
 
 ## Remarks.
 1. Quite interesting command:
@@ -500,4 +689,8 @@ push_blackbox-exporter:
       }
     ]
     ```
+5. To run elasticsearch you need to modify docker-host machine [link](https://github.com/docker-library/elasticsearch/issues/111)
+```bash
+sudo sysctl -w vm.max_map_count=262144
+```
 
