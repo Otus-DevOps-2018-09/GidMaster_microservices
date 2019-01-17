@@ -12,10 +12,7 @@
     * [Homework 7. Monitoring.](#homework-7-monitoring)
     * [Homework 8. Monitoring.](#homework-8-monitoring)
     * [Homework 9. Logging](#homework-9-logging)
-<<<<<<< HEAD
-=======
     * [Homework 10. Kubernetes](#homework-10-kubernetes)
->>>>>>> [k8s-1] UPDATED README.md
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -656,8 +653,6 @@ docker-compose -f docker-compose-logging.yml -f docker-compose.yml down
 docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d
 ```
 look closer to zipkin WEB UI.
-<<<<<<< HEAD
-=======
 
 ###Homework 10. Kubernetes.
 1. Make primitives for our services.
@@ -685,7 +680,6 @@ spec:
 ```
 2 Folow up this [tutorial](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 
->>>>>>> [k8s-1] UPDATED README.md
 
 ## Remarks.
 1. Quite interesting command:
