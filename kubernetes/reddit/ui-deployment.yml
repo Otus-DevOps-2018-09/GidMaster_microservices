@@ -17,3 +17,5 @@ spec:
       containers:
       - image: gidmaster/ui
         name: ui
+        ports:
+        - containerPort: 9292

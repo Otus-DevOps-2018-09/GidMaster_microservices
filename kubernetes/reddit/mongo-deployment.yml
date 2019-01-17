@@ -7,13 +7,13 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: post_db
+      app: mongo
   template:
     metadata:
-      name: post_db
+      name: mongo
       labels:
-        app: post_db
+        app: mongo
     spec:
       containers:
-      - image: momgo:3.2
-        name: post_db
+      - image: mongo:3.2
+        name: mongo
