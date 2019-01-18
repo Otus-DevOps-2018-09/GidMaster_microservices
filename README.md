@@ -12,6 +12,7 @@
     * [Homework 7. Monitoring.](#homework-7-monitoring)
     * [Homework 8. Monitoring.](#homework-8-monitoring)
     * [Homework 9. Logging](#homework-9-logging)
+    * [Homework 10. Kubernetes](#homework-10-kubernetes)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -652,6 +653,33 @@ docker-compose -f docker-compose-logging.yml -f docker-compose.yml down
 docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d
 ```
 look closer to zipkin WEB UI.
+
+###Homework 10. Kubernetes.
+1. Make primitives for our services.
+Make a `post-deployment.yml` primitive for post service.
+```yaml
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: post-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: post
+  template:
+    metadata:
+      name: post
+      labels:
+        app: post
+    spec:
+      containers:
+      - image: chromko/post
+        name: post
+```
+2 Folow up this [tutorial](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
 
 ## Remarks.
 1. Quite interesting command:
