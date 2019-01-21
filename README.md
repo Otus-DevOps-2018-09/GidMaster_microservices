@@ -11,8 +11,9 @@
     * [Homework 6. GitLab CI.](#homework-6-gitlab-ci)
     * [Homework 7. Monitoring.](#homework-7-monitoring)
     * [Homework 8. Monitoring.](#homework-8-monitoring)
-    * [Homework 9. Logging](#homework-9-logging)
-    * [Homework 10. Kubernetes](#homework-10-kubernetes)
+    * [Homework 9. Logging.](#homework-9-logging)
+    * [Homework 10. Kubernetes.](#homework-10-kubernetes)
+    * [Homework 11. Kubernetes.](#homework-11-kubernetes)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -654,7 +655,7 @@ docker-compose -f docker-compose-logging.yml -f docker-compose.yml up -d
 ```
 look closer to zipkin WEB UI.
 
-###Homework 10. Kubernetes.
+### Homework 10. Kubernetes.
 1. Make primitives for our services.
 Make a `post-deployment.yml` primitive for post service.
 ```yaml
@@ -679,6 +680,14 @@ spec:
         name: post
 ```
 2 Folow up this [tutorial](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
+### Homework 11. Kubernetes.
+1. Explored `minikube` and hot it can be used for for running local Kubernetes cluster.
+2. Studied kubectl utility.
+3. Created `namespaces`, `deployment` and `service` files needed to run application into kubernetes cluster.
+4. Looked on Kubernetes-Dashboard add-on.
+5. Created GKE cluster using `gcloud utility`.
+6. Completed task with * (terraform section).
 
 
 ## Remarks.
@@ -720,5 +729,13 @@ spec:
 5. To run elasticsearch you need to modify docker-host machine [link](https://github.com/docker-library/elasticsearch/issues/111)
 ```bash
 sudo sysctl -w vm.max_map_count=262144
+```
+6. To run `minikube` with more CPUs and memory use (default cpus=2 memory=2048):
+```bash
+minikube start --cpus=3 --memory=6144
+```
+7. To get access to GKE cluster dashboard add-on Web UI use such link ([from documentation](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/#accessing-the-dashboard-ui))
+```
+http://localhost:8001/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/.
 ```
 
