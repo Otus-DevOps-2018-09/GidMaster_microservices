@@ -14,6 +14,7 @@
     * [Homework 9. Logging.](#homework-9-logging)
     * [Homework 10. Kubernetes.](#homework-10-kubernetes)
     * [Homework 11. Kubernetes.](#homework-11-kubernetes)
+    * [Homework 12. Kubernetes.](#homework-12-kubernetes)
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -689,6 +690,20 @@ spec:
 5. Created GKE cluster using `gcloud utility`.
 6. Completed task with * (terraform section).
 
+### Homework 12. Kubernetes.
+1. Learned some new knowledge about networking in Kubernetes.
+  - kube-dns, core-dns
+  - kube-proxy, kubenet
+  - Services for network: ClusterIP and NodePort
+  - LoadBalancer: Google and based on Ingress
+  - TLS termination (plus task with *)
+  - Network Policy.
+2. Studied some new information about diffirent types of data storeges.
+  - emptyDir
+  - PersistentVolume
+  - PersistentVolumeClaim.
+  - Dynamic Voulmes
+  - StorageClass
 
 ## Remarks.
 1. Quite interesting command:
