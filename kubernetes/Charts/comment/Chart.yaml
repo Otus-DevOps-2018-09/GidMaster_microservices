@@ -1,0 +1,9 @@
+---
+name: comment
+version: 1.0.0
+description: OTUS reddit application COMMENT
+maintainers:
+ - name: Konstantin Syrovatsky 
+   email: myemail@example.com
+appVersion: 1.0
+
