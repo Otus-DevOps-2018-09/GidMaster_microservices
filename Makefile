@@ -5,7 +5,7 @@ comment:
 	cd src/comment && bash docker_build.sh
 
 post:
-	cd src/post-py && bash docker_build.sh
+	cd src/post && bash docker_build.sh
 
 ui:
 	cd src/ui && bash docker_build.sh
