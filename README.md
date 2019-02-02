@@ -705,6 +705,26 @@ spec:
   - Dynamic Voulmes
   - StorageClass
 
+### Homework 13. Kubernetes.
+1. Learned basic knowledge about `Helm`.
+  - Installed `help` and `tilles` (server side).
+  - Studied and made charts.
+    - templates
+    - user variables
+    - functions.
+  - Updates and run charts.
+2. GitLab omnibus in Kubernates cluster.
+  - Extra pool
+  - imported helm chart GitLab
+  - GitLab integrated with cluster
+  - Made group and projects to build and deploy our application
+3. CI/CD pipelines in Kubernetes.
+  - Used group variables to access to docker hub `CI_REGISTRY_USER` and `CI_REGISTRY_PASSWORD`
+  - Added source files to repo
+  - Added `.gitlab-ci.yml` to build piplines and deploy
+  - `build`->`test`->`release`->`review`->`cleanup` pipeline
+  - `staging`->`production` pipeline
+
 ## Remarks.
 1. Quite interesting command:
     ```bash
