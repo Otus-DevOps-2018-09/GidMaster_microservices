@@ -15,6 +15,8 @@
     * [Homework 10. Kubernetes.](#homework-10-kubernetes)
     * [Homework 11. Kubernetes.](#homework-11-kubernetes)
     * [Homework 12. Kubernetes.](#homework-12-kubernetes)
+    * [Homework 13. Kubernetes.](#homework-13-kubernetes)
+    * [Homework 14. Kubernetes.](#homework-14-kubernetes)  
 * [Remarks.](#remarks)
 <!--te-->
 ## Task Description.
@@ -724,6 +726,9 @@ spec:
   - Added `.gitlab-ci.yml` to build piplines and deploy
   - `build`->`test`->`release`->`review`->`cleanup` pipeline
   - `staging`->`production` pipeline
+
+### Homework 14. Kubernetes.
+to lazy to write descripttion.
 
 ## Remarks.
 1. Quite interesting command:
